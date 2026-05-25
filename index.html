@@ -2,200 +2,706 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔥 GitHub 趋势仪表盘</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI Coding Agent 全景图 · 2026</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: #0d1117; color: #c9d1d9; min-height: 100vh;
-    display: flex; align-items: center; justify-content: center; padding: 2rem;
+    font-family: 'Inter', -apple-system, 'Noto Sans SC', sans-serif;
+    background: #0a0a0f; color: #e4e4ed;
+    line-height: 1.6; overflow-x: hidden;
   }
-  .container { max-width: 1000px; width: 100%; }
-  header { margin-bottom: 2.5rem; }
-  .title-row {
-    display: flex; align-items: center; gap: 1rem; margin-bottom: .5rem;
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a0f; }
+  ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+  
+  /* Hero */
+  .hero {
+    min-height: 60vh; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 4rem 2rem;
+    background: radial-gradient(ellipse at 50% 0%, #1a1040 0%, #0a0a0f 60%);
+    position: relative; overflow: hidden;
   }
-  .title-row h1 {
-    font-size: 2rem; font-weight: 800;
-    background: linear-gradient(135deg, #58a6ff, #bc8cff);
+  .hero::before {
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent, #6c5ce7 20%, transparent 40%, #00cec9 60%, transparent 80%);
+    opacity: 0.04; animation: spin 30s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hero-content { position: relative; z-index: 1; max-width: 900px; }
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 900;
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7, #00cec9);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
+    background-clip: text; margin-bottom: .5rem;
   }
-  .badge {
-    background: #21262d; color: #8b949e; font-size: .75rem;
-    padding: .25rem .75rem; border-radius: 999px;
-    border: 1px solid #30363d; font-weight: 500;
+  .hero .badge {
+    display: inline-block; background: #1a1a2e; color: #a29bfe;
+    padding: .3rem 1rem; border-radius: 999px; font-size: .8rem;
+    border: 1px solid #2a2a4a; margin-bottom: 1rem;
   }
-  .subtitle { color: #8b949e; font-size: .9rem; }
-  .legend {
-    display: flex; gap: 1.5rem; margin: 1rem 0 1.5rem; flex-wrap: wrap;
+  .hero p { color: #888; font-size: 1.1rem; max-width: 650px; margin: 0 auto; }
+  .hero .stats {
+    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    margin-top: 2rem;
   }
-  .legend-item {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: .8rem; color: #8b949e;
-  }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 2rem; font-weight: 800; color: #fff; }
+  .stat-label { font-size: .75rem; color: #666; text-transform: uppercase; letter-spacing: .05em; }
 
-  .repo-grid { display: flex; flex-direction: column; gap: .75rem; }
+  /* Container */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
 
-  .repo-card {
-    background: #161b22; border-radius: 12px; padding: 0;
-    border: 1px solid #30363d;
-    transition: all .2s ease;
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .repo-card:hover {
-    border-color: #58a6ff;
-    background: #1c2128;
-    transform: translateX(4px);
-  }
-  .repo-card:active {
-    transform: translateX(4px) scale(0.99);
-  }
-  .repo-card-inner {
-    padding: 1.25rem 1.5rem;
-    position: relative;
-  }
-  .repo-top {
+  /* Section */
+  .section { padding: 4rem 0; }
+  .section-title {
+    font-size: 1.8rem; font-weight: 800; margin-bottom: .5rem;
     display: flex; align-items: center; gap: .75rem;
-    margin-bottom: .4rem;
   }
-  .rank {
-    font-size: .75rem; font-weight: 700; color: #484f58;
-    min-width: 1.5rem;
-  }
-  .lang-dot {
-    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
-  }
-  .repo-name {
-    font-weight: 600; color: #58a6ff; font-size: .95rem;
-  }
-  .repo-desc {
-    margin-left: 2.5rem; font-size: .85rem; color: #8b949e;
-    line-height: 1.4; margin-bottom: .5rem;
-  }
-  .repo-stats {
-    margin-left: 2.5rem; display: flex; gap: 1.25rem;
-    font-size: .8rem; color: #8b949e;
-  }
-  .repo-stats span { display: flex; align-items: center; gap: .3rem; }
-  .spark { font-size: .85rem; }
+  .section-title .emoji { font-size: 1.5rem; }
+  .section-subtitle { color: #666; margin-bottom: 2rem; font-size: .95rem; }
 
-  /* 打开按钮 — 悬停时出现在右上角 */
-  .open-btn {
-    position: absolute; top: .75rem; right: .75rem;
-    background: #238636; color: #fff;
-    border: none; border-radius: 6px;
-    padding: .3rem .7rem; font-size: .75rem; font-weight: 600;
-    opacity: 0; transition: opacity .2s;
-    text-decoration: none;
-    z-index: 2;
+  /* Timeline */
+  .timeline {
+    position: relative; padding-left: 2rem;
   }
-  .repo-card:hover .open-btn { opacity: 1; }
-  .open-btn:hover { background: #2ea043; }
+  .timeline::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(to bottom, #6c5ce7, #00cec9, transparent);
+  }
+  .timeline-item {
+    position: relative; padding: 0 0 2.5rem 1.5rem;
+  }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -2.35rem; top: .3rem;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #6c5ce7; border: 2px solid #0a0a0f;
+  }
+  .timeline-item:nth-child(2)::before { background: #00b894; }
+  .timeline-item:nth-child(3)::before { background: #fdcb6e; }
+  .timeline-item:nth-child(4)::before { background: #e17055; }
+  .timeline-year { font-size: .75rem; font-weight: 700; color: #6c5ce7; }
+  .timeline-item:nth-child(2) .timeline-year { color: #00b894; }
+  .timeline-item:nth-child(3) .timeline-year { color: #fdcb6e; }
+  .timeline-item:nth-child(4) .timeline-year { color: #e17055; }
 
+  /* Tool Cards */
+  .tool-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .tool-card {
+    background: #121218; border-radius: 16px; padding: 1.5rem;
+    border: 1px solid #1e1e2a;
+    transition: all .25s ease; cursor: default;
+  }
+  .tool-card:hover { border-color: #6c5ce7; transform: translateY(-2px); }
+  .tool-card-header {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: .75rem;
+  }
+  .tool-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .tool-meta { flex: 1; }
+  .tool-name { font-weight: 700; font-size: 1.05rem; }
+  .tool-org { font-size: .75rem; color: #666; }
+  .tool-tags { display: flex; gap: .35rem; flex-wrap: wrap; margin: .5rem 0; }
+  .tag {
+    font-size: .65rem; padding: .15rem .5rem; border-radius: 999px;
+    font-weight: 600; letter-spacing: .02em;
+  }
+  .tag-agent { background: #2d1b69; color: #a29bfe; }
+  .tag-ide { background: #1b2d3d; color: #74b9ff; }
+  .tag-extension { background: #1b3d2d; color: #55efc4; }
+  .tag-free { background: #2d2d1b; color: #fdcb6e; }
+  .tag-paid { background: #2d1b1b; color: #ff7675; }
+  .tag-opensource { background: #1b2d2d; color: #00cec9; }
+  .tool-desc { color: #888; font-size: .85rem; margin-bottom: .75rem; line-height: 1.5; }
+  .tool-stats {
+    display: flex; gap: 1rem; font-size: .75rem; color: #555;
+    border-top: 1px solid #1e1e2a; padding-top: .75rem;
+  }
+  .tool-stat { display: flex; align-items: center; gap: .25rem; }
+
+  /* Diagram */
+  .diagram-container {
+    background: #121218; border-radius: 20px; padding: 2rem;
+    border: 1px solid #1e1e2a; overflow-x: auto;
+  }
+  .diagram svg { width: 100%; height: auto; max-width: 900px; display: block; margin: 0 auto; }
+
+  /* Term Grid */
+  .term-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: .75rem;
+  }
+  .term-card {
+    background: #121218; border-radius: 12px; padding: 1rem 1.25rem;
+    border: 1px solid #1e1e2a;
+    transition: all .2s ease; cursor: pointer;
+  }
+  .term-card:hover { border-color: #6c5ce7; background: #16161e; }
+  .term-name { font-weight: 700; color: #a29bfe; font-size: .9rem; }
+  .term-en { font-size: .7rem; color: #555; font-family: 'Inter', monospace; margin-bottom: .3rem; }
+  .term-desc { font-size: .78rem; color: #888; line-height: 1.5; }
+
+  /* Learning Path */
+  .path-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  .path-card {
+    background: #121218; border-radius: 16px; padding: 1.5rem;
+    border: 1px solid #1e1e2a;
+    position: relative; overflow: hidden;
+  }
+  .path-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .path-card:nth-child(1)::before { background: linear-gradient(90deg, #00b894, #00cec9); }
+  .path-card:nth-child(2)::before { background: linear-gradient(90deg, #6c5ce7, #a29bfe); }
+  .path-card:nth-child(3)::before { background: linear-gradient(90deg, #fdcb6e, #e17055); }
+  .path-level { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; }
+  .path-card:nth-child(1) .path-level { color: #00cec9; }
+  .path-card:nth-child(2) .path-level { color: #a29bfe; }
+  .path-card:nth-child(3) .path-level { color: #fdcb6e; }
+  .path-title { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+  .path-items { list-style: none; font-size: .82rem; color: #888; }
+  .path-items li { margin-bottom: .4rem; padding-left: 1.2rem; position: relative; }
+  .path-items li::before { content: '›'; position: absolute; left: 0; color: #6c5ce7; font-weight: 700; }
+
+  /* Resources */
+  .resource-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: .75rem;
+  }
+  .resource-card {
+    background: #121218; border-radius: 12px; padding: 1rem 1.25rem;
+    border: 1px solid #1e1e2a; text-decoration: none; color: inherit;
+    transition: all .2s ease;
+  }
+  .resource-card:hover { border-color: #6c5ce7; background: #16161e; }
+  .resource-type { font-size: .65rem; color: #6c5ce7; font-weight: 600; text-transform: uppercase; }
+  .resource-name { font-weight: 600; margin: .15rem 0; font-size: .9rem; }
+  .resource-desc { font-size: .75rem; color: #666; }
+
+  /* Hermes spotlight */
+  .spotlight {
+    background: linear-gradient(135deg, #1a1040, #0a0a0f);
+    border: 1px solid #2a1a5a;
+    border-radius: 20px; padding: 2rem;
+    margin: 2rem 0;
+    position: relative; overflow: hidden;
+  }
+  .spotlight::before {
+    content: ''; position: absolute; top: -50%; right: -20%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #6c5ce722, transparent);
+    border-radius: 50%;
+  }
+  .spotlight-content { position: relative; z-index: 1; }
+  .spotlight h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: .75rem; color: #a29bfe; }
+  .spotlight p { color: #888; font-size: .9rem; line-height: 1.7; }
+
+  /* Footer */
   .footer {
-    margin-top: 2rem; text-align: center;
-    color: #484f58; font-size: .75rem;
+    text-align: center; padding: 3rem 2rem; color: #333; font-size: .8rem;
   }
-  .footer a { color: #58a6ff; text-decoration: none; }
+  .footer a { color: #6c5ce7; text-decoration: none; }
 
   @media (max-width: 600px) {
-    body { padding: 1rem; }
-    .title-row h1 { font-size: 1.5rem; }
-    .repo-card-inner { padding: 1rem; }
-    .open-btn { opacity: 1; background: #23863688; }
+    .tool-grid { grid-template-columns: 1fr; }
+    .term-grid { grid-template-columns: 1fr; }
+    .path-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .hero { min-height: 50vh; padding: 3rem 1.5rem; }
+    .section { padding: 2.5rem 0; }
   }
+
+  /* Tab filters */
+  .filter-bar {
+    display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .filter-btn {
+    background: #121218; border: 1px solid #1e1e2a; color: #888;
+    padding: .4rem .9rem; border-radius: 999px; font-size: .8rem;
+    cursor: pointer; transition: all .2s;
+  }
+  .filter-btn:hover { border-color: #6c5ce7; color: #e4e4ed; }
+  .filter-btn.active { background: #2d1b69; border-color: #6c5ce7; color: #a29bfe; }
+
+  .term-category { font-size: .65rem; color: #555; margin-bottom: .15rem; }
 </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <div class="title-row">
-      <h1>🔥 GitHub 趋势</h1>
-      <span class="badge">实时</span>
-    </div>
-    <div class="subtitle">今日最热门开源项目 · <span id="date"></span></div>
-    <div class="legend" id="legend-area"></div>
-  </header>
-
-  <div class="repo-grid" id="repo-grid">
-    <div style="text-align:center;padding:3rem;color:#8b949e;">⏳ 加载中...</div>
-  </div>
-
-  <div class="footer">
-    数据来源 <a href="https://github.com/trending" target="_blank">GitHub Trending</a> ·
-    点击卡片即可打开仓库
-  </div>
-</div>
+<div id="app"></div>
 
 <script>
-document.getElementById('date').textContent = new Date().toLocaleString('zh-CN', {
-  year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'
-});
+// ─── DATA ──────────────────────────────────────────────────────────
 
-const LANG_COLORS = {
-  'Python': '#3572A5', 'TypeScript': '#3178c6', 'Go': '#00ADD8',
-  'Ruby': '#701516', 'Rust': '#DEA584', 'JavaScript': '#f1e05a',
-  'Shell': '#89e051', 'C': '#555555', 'C++': '#f34b7d',
-  'Java': '#b07219', 'Kotlin': '#A97BFF', 'Swift': '#ffac45',
-  'HTML': '#e34c26', 'CSS': '#563d7c', 'Vue': '#41b883',
-  'Dart': '#00B4AB', 'PHP': '#4F5D95', 'C#': '#178600',
+const HERO_DATA = {
+  title: 'AI Coding Agent 全景图',
+  subtitle: '从 Copilot 到 Agent：2025-2026 AI 编程工具生态完全指南 · 业余学习者入门手册',
+  stats: [
+    { num: '8', label: '主流工具' },
+    { num: '32+', label: '核心术语' },
+    { num: '30+', label: '推荐资源' },
+    { num: '3级', label: '学习路径' },
+  ],
+  badge: '2026 年版',
 };
 
-const REPOS = [
-  { name: 'Lum1104/Understand-Anything', lang: 'TypeScript', desc: 'Turn any code into an interactive knowledge graph — explore, search, and ask questions. Works with Claude Code, Codex, Cursor, Copilot, Gemini CLI.', stars: '27,248', forks: '2,322', today: '+3,999' },
-  { name: 'multica-ai/andrej-karpathy-skills', lang: '—', desc: 'A single CLAUDE.md to improve Claude Code behavior, from Andrej Karpathy\'s observations on LLM coding pitfalls.', stars: '152,724', forks: '15,652', today: '+2,551' },
-  { name: 'rohitg00/ai-engineering-from-scratch', lang: 'Python', desc: 'Learn it. Build it. Ship it for others.', stars: '16,717', forks: '2,923', today: '+1,853' },
-  { name: 'anthropics/claude-plugins-official', lang: 'Python', desc: 'Official, Anthropic-managed directory of high-quality Claude Code Plugins.', stars: '27,379', forks: '2,912', today: '+1,173' },
-  { name: 'Alishahryar1/free-claude-code', lang: 'Python', desc: 'Use claude-code for free in the terminal, VSCode extension or Discord.', stars: '29,263', forks: '4,396', today: '+553' },
-  { name: 'multica-ai/multica', lang: 'TypeScript', desc: 'Open-source managed agents platform. Turn coding agents into real teammates.', stars: '32,661', forks: '3,914', today: '+585' },
-  { name: 'colbymchenry/codegraph', lang: 'TypeScript', desc: 'Pre-indexed code knowledge graph for Claude Code, Codex, Cursor, OpenCode, and Hermes Agent.', stars: '22,911', forks: '1,264', today: '+3,003' },
-  { name: 'earendil-works/pi', lang: 'TypeScript', desc: 'AI agent toolkit: coding agent CLI, unified LLM API, TUI & web UI libraries, Slack bot, vLLM pods.', stars: '54,087', forks: '6,452', today: '+456' },
-  { name: 'anthropics/knowledge-work-plugins', lang: 'Python', desc: 'Open source repository of plugins for knowledge workers using Claude Cowork.', stars: '14,255', forks: '1,760', today: '+550' },
-  { name: 'mukul975/Anthropic-Cybersecurity-Skills', lang: 'Python', desc: '754 structured cybersecurity skills for AI agents · 5 frameworks: MITRE ATT&CK, NIST CSF 2.0, MITRE ATLAS, D3FEND & NIST AI RMF.', stars: '8,540', forks: '1,069', today: '+930' },
+const TIMELINE = [
+  { year: '2021-2022', title: '代码补全时代', desc: 'GitHub Copilot 发布，AI 第一次能帮你写代码。核心是"补全"——你写一半，它猜剩下的。', color: '#6c5ce7' },
+  { year: '2023-2024', title: 'Chat 界面 + IDE 集成', desc: 'Cursor 诞生，ChatGPT 进入 IDE。从"补全"进化到"对话式编程"。你可以问"帮我写个登录功能"而不是手动搜代码。', color: '#00b894' },
+  { year: '2025', title: 'Agent 元年', desc: 'Claude Code、OpenAI Codex、Windsurf 爆发。AI 不再等你问——它能自己规划任务、执行命令、修复 bug、反复迭代。Agent 模式成为标配。', color: '#fdcb6e' },
+  { year: '2026（现在）', title: '多智能体编排时代', desc: '并行 Agent、Agent Teams、背景任务、MCP/ACP 协议标准化。AI 不再是一个工具，而是一个能合作的"同事"。', color: '#e17055' },
 ];
 
-function render() {
-  const grid = document.getElementById('repo-grid');
-  const legendArea = document.getElementById('legend-area');
+const TOOLS = [
+  {
+    name: 'Claude Code', org: 'Anthropic', icon: '🧠',
+    color: '#6c5ce7', type: ['agent'],
+    tags: ['agent', 'paid'],
+    desc: '终端原生 AI agent，深度推理能力最强。1M token 上下文，SWE-bench 80.8%。可并行 16+ 子 agent。适合重度命令行开发者。',
+    stats: ['$20-200/mo', 'Opus 4.7', '1M ctx'],
+    highlight: true,
+  },
+  {
+    name: 'Cursor', org: 'Ansible (曾用)', icon: '🔲',
+    color: '#74b9ff', type: ['ide'],
+    tags: ['ide', 'paid'],
+    desc: 'AI-native IDE（VS Code 分支），超强自动补全（72% 接受率），Composer 多文件编辑。后台 agent 可跑在云端。最适合日常开发的"全能型选手"。',
+    stats: ['$20-40/mo', '多模型', '256K ctx'],
+  },
+  {
+    name: 'GitHub Copilot', org: 'Microsoft/GitHub', icon: '🪄',
+    color: '#55efc4', type: ['extension'],
+    tags: ['extension', 'paid', 'free'],
+    desc: '最多人用的 AI 编程工具，$10/月最便宜。2026 年升级为"coding agent"，可自动把 Issue 变 PR。全 IDE 支持，团队首选。',
+    stats: ['$10-39/mo', '多模型', '128K-1M'],
+  },
+  {
+    name: 'OpenAI Codex CLI', org: 'OpenAI', icon: '⚡',
+    color: '#fdcb6e', type: ['agent'],
+    tags: ['agent', 'paid'],
+    desc: 'OpenAI 出品的终端 agent。与 GPT-5 深度集成，云端沙箱执行。适合 OpenAI 生态用户。CLI + 桌面 App 双模式。',
+    stats: ['$20-200/mo', 'GPT-5', '1M ctx'],
+  },
+  {
+    name: 'Windsurf', org: 'Codeium', icon: '🏄',
+    color: '#00cec9', type: ['ide'],
+    tags: ['ide', 'paid'],
+    desc: 'AI-native IDE，"Cascade"模式能做跨文件重构。Netlify 一键部署、Devon Cloud 后台 agent。2026 年增长最快的 AI IDE。',
+    stats: ['$20-200/mo', '多模型', '1M ctx'],
+  },
+  {
+    name: 'Google Antigravity', org: 'Google', icon: '🤖',
+    color: '#ff7675', type: ['ide'],
+    tags: ['ide', 'paid', 'free'],
+    desc: 'Google 的 AI IDE，Gemini 2.5 Pro 深度集成。多 agent 并行、内置浏览器、Google Cloud 一键部署。多模型自由切换。',
+    stats: ['$0-200/mo', 'Gemini/Claude/GPT', '1M ctx'],
+  },
+  {
+    name: 'Kiro', org: 'AWS Ecosystem', icon: '🧩',
+    color: '#a29bfe', type: ['agent'],
+    tags: ['agent', 'paid', 'free'],
+    desc: '"Spec-driven development"——你先写"规格说明"，AI 自动编码实现。更可控、更可复现。AWS + Claude + 开源模型都支持。',
+    stats: ['$0-200/mo', '多模型', '1M ctx'],
+  },
+  {
+    name: 'Hermes Agent', org: 'Nous Research', icon: '🪽',
+    color: '#e17055', type: ['agent'],
+    tags: ['agent', 'paid', 'opensource'],
+    desc: '开源 AI agent（你就是它在跑）。终端原生、MCP/ACP 协议支持、技能系统（可记忆工作流）、多平台分发（Telegram/Discord/SMS）。面向"AI 作为基础设施"的开发者。',
+    stats: ['开源·按用量', 'DeepSeek/OpenAI', '可定制约'],
+  },
+];
 
-  const langs = [...new Set(REPOS.map(r => r.lang).filter(l => l !== '—'))];
-  legendArea.innerHTML = langs.map(l => {
-    const color = LANG_COLORS[l] || '#555';
-    return `<div class="legend-item"><span class="legend-dot" style="background:${color}"></span>${l}</div>`;
-  }).join('');
+const LANDSCAPE_POSITIONS = [
+  { x: 50, y: 8, label: 'AI Coding Agent 生态全景', size: 28, color: '#6c5ce7', bold: true },
+  // Row 1: IDE/SaaS 产品
+  { x: 15, y: 22, label: 'Cursor', size: 18, color: '#74b9ff' },
+  { x: 38, y: 22, label: 'Windsurf', size: 17, color: '#00cec9' },
+  { x: 60, y: 22, label: 'Antigravity', size: 17, color: '#ff7675' },
+  { x: 82, y: 22, label: 'Kiro', size: 15, color: '#a29bfe' },
+  // Row 2: CLI/Agent 产品
+  { x: 15, y: 38, label: 'Claude Code', size: 20, color: '#6c5ce7' },
+  { x: 38, y: 38, label: 'Codex CLI', size: 17, color: '#fdcb6e' },
+  { x: 60, y: 38, label: 'Hermes Agent', size: 16, color: '#e17055' },
+  { x: 82, y: 38, label: 'Aider', size: 13, color: '#55efc4' },
+  // Row 3: Extension/Free
+  { x: 15, y: 54, label: 'GitHub Copilot', size: 19, color: '#55efc4' },
+  { x: 38, y: 54, label: 'Continue', size: 14, color: '#00b894' },
+  { x: 60, y: 54, label: 'OpenCode', size: 13, color: '#fdcb6e' },
+  // Categories
+  { x: 7, y: 20, label: '▸ AI IDE', size: 10, color: '#666' },
+  { x: 7, y: 36, label: '▸ Terminal Agent', size: 10, color: '#666' },
+  { x: 64, y: 52, label: '▸ Extension/开源', size: 10, color: '#666' },
+  // Divider lines (visual only via labels)
+  { x: 50, y: 68, label: '─ 底层基础设施 ─', size: 12, color: '#444' },
+  // Infrastructure
+  { x: 15, y: 78, label: 'Anthropic Claude', size: 14, color: '#6c5ce7', opacity: 0.7 },
+  { x: 38, y: 78, label: 'OpenAI GPT-5', size: 14, color: '#fdcb6e', opacity: 0.7 },
+  { x: 60, y: 78, label: 'Google Gemini', size: 14, color: '#ff7675', opacity: 0.7 },
+  { x: 82, y: 78, label: '开源模型', size: 14, color: '#55efc4', opacity: 0.7 },
+  // Protocols
+  { x: 25, y: 90, label: 'MCP (模型上下文协议)', size: 12, color: '#888' },
+  { x: 50, y: 90, label: 'ACP (Agent通信协议)', size: 12, color: '#888' },
+  { x: 75, y: 90, label: 'A2A (Agent间协议)', size: 12, color: '#888' },
+];
 
-  grid.innerHTML = REPOS.map((r, i) => {
-    const color = LANG_COLORS[r.lang] || '#555';
-    const url = `https://github.com/${r.name}`;
-    return `<a class="repo-card" href="${url}" target="_blank" rel="noopener">
-      <div class="repo-card-inner">
-        <div class="repo-top">
-          <span class="rank">#${i+1}</span>
-          <span class="lang-dot" style="background:${color}"></span>
-          <span class="repo-name">${r.name}</span>
-        </div>
-        ${r.desc ? `<div class="repo-desc">${r.desc}</div>` : ''}
-        <div class="repo-stats">
-          <span>⭐ ${r.stars}</span>
-          <span>🍴 ${r.forks}</span>
-          <span class="spark">📈 ${r.today} today</span>
-        </div>
-        <span class="open-btn">打开 →</span>
-      </div>
-    </a>`;
-  }).join('');
+const TERMS = [
+  { name: '大语言模型 (LLM)', en: 'Large Language Model', cat: '基础概念',
+    desc: '通过海量文本训练出的 AI 模型，能理解和生成人类语言。GPT、Claude、DeepSeek 都是 LLM。它是所有 AI 应用的"大脑"。' },
+  { name: '基础模型', en: 'Foundation Model', cat: '基础概念',
+    desc: '在大规模数据上预训练的通用模型，可被微调适配各种任务。LLM 是基础模型的一种。就像"通用大学教育"，之后可以专攻不同方向。' },
+  { name: 'Agent (智能体)', en: 'AI Agent', cat: '核心概念',
+    desc: '能自主规划 → 执行 → 反馈循环的 AI 系统。不只是"回答问题"，而是"帮我把这件事做完"。Claude Code、Hermes Agent 都属于 Agent。' },
+  { name: 'AGI', en: 'Artificial General Intelligence', cat: '核心概念',
+    desc: '通用人工智能——能像人类一样理解、学习、应用知识的 AI。目前所有 AI 都只是"窄 AI"（特定领域）。AGI 是终极目标。' },
+  { name: 'RAG', en: 'Retrieval Augmented Generation', cat: '核心技术',
+    desc: '检索增强生成——让 AI 先查资料再回答。解决 AI"瞎编"的问题。比如问"我们公司的请假流程"，AI 先检索公司文档，再基于文档回答。' },
+  { name: '微调', en: 'Fine-tuning', cat: '核心技术',
+    desc: '在预训练模型基础上用特定数据继续训练，让它擅长某个领域。就像"一个医学博士再花 3 个月专攻心脏外科"。' },
+  { name: 'RLHF', en: 'Reinforcement Learning from Human Feedback', cat: '核心技术',
+    desc: '基于人类反馈的强化学习——人类给 AI 的回答打分，AI 学习哪些回答更好。这是 ChatGPT 比早期模型"更听话"的关键技术。' },
+  { name: '提示工程', en: 'Prompt Engineering', cat: '实用技能',
+    desc: '设计提问方式让 AI 给出更好答案。就像"问对问题才能得到好答案"。一个好的 prompt 能大幅提升 AI 输出质量。' },
+  { name: '思维链', en: 'Chain-of-Thought (CoT)', cat: '核心技术',
+    desc: '让 AI "一步步思考"再给出答案，而不是直接猜。比如数学题："小明有 5 个苹果，给了小红 2 个，又买了 3 个..." AI 逐步计算，准确率大幅提升。' },
+  { name: '混合专家模型', en: 'Mixture of Experts (MoE)', cat: '模型架构',
+    desc: '把多个"专家子模型"组合在一起，每次只激活部分专家。训练更快、推理更省资源。DeepSeek、Mixtral 都用了 MoE。' },
+  { name: '多模态', en: 'Multi-modal', cat: '核心概念',
+    desc: '能同时理解文字、图片、音频、视频等多种形式的 AI。GPT-4V 能"看图说话"，Gemini 能直接"看视频理解内容"。' },
+  { name: '向量数据库', en: 'Vector Database', cat: '基础设施',
+    desc: '专门存储和检索"向量"（数据的数学表示）的数据库。让 AI 能"回忆"见过的东西。Pinecone、Chroma 是主流选择。' },
+  { name: 'Token / 词元', en: 'Token', cat: '基础概念',
+    desc: 'AI 理解文本的最小单位。1 个中文 ≈ 1-2 个 token，1 个英文单词 ≈ 1-2 个 token。API 按 token 计费。' },
+  { name: '上下文窗口', en: 'Context Window', cat: '基础概念',
+    desc: 'AI 一次能"记住"的最大 token 数量。越大越好。Claude 有 1M token（≈ 70 万汉字），能一次读完整本《三体》。' },
+  { name: '推理 / 训练', en: 'Inference / Training', cat: '基础概念',
+    desc: '训练 = AI 学习的过程（像上学）。推理 = AI 实际使用时思考的过程（像考试时做题）。训练贵，推理便宜。' },
+  { name: '量化', en: 'Quantization', cat: '实用技术',
+    desc: '把 AI 模型"压缩"到更小体积，运行更快但精度略有下降。让大模型能在普通电脑甚至手机上运行（如 GGUF 格式）。' },
+  { name: '蒸馏', en: 'Distillation', cat: '实用技术',
+    desc: '用大模型（老师）教小模型（学生），让小的也能有大模型的"水平"。成本低、速度快。DeepSeek-R1 蒸馏版就是例子。' },
+  { name: '对齐', en: 'Alignment', cat: '核心概念',
+    desc: '让 AI 的目标和人类价值观一致——不说有害话、不干坏事。RLHF 是对齐的主要方法。"越强的 AI 越需要对齐"。' },
+  { name: '工具调用', en: 'Function Calling / Tool Use', cat: 'Agent 技术',
+    desc: 'AI 调用外部工具的能力——搜网页、执行代码、查数据库。这是 Agent 能"做事"而非"说话"的基础。MCP 是它的标准化协议。' },
+  { name: 'MCP', en: 'Model Context Protocol', cat: 'Agent 技术',
+    desc: 'Anthropic 推出的开放标准，让 AI 统一连接各种工具（数据库、API、文件系统）。"AI 界的 USB 接口"。Hermes Agent 原生支持。' },
+  { name: 'ACP', en: 'Agent Communication Protocol', cat: 'Agent 技术',
+    desc: 'Agent 之间互相通信的协议。Claude Code、Copilot、Codex 都支持。让不同公司的 AI 能"协作"。' },
+  { name: 'A2A', en: 'Agent-to-Agent', cat: 'Agent 技术',
+    desc: 'Google 推出的 Agent 间通信协议。与 ACP 竞争。目的是让不同厂商的 Agent 能互相"对话、分配任务"。' },
+  { name: '推理模型', en: 'Reasoning Model / Test-Time Compute', cat: '前沿趋势',
+    desc: '回答前会"自己思考"的模型（如 OpenAI o1/o3、DeepSeek-R1）。质量更高但更慢。2025-2026 年最大突破之一。' },
+  { name: 'Computer Use', en: 'Computer Use', cat: '前沿趋势',
+    desc: 'AI 能像人一样操作电脑——移动鼠标、点击、打字。Anthropic 首发，OpenAI 跟进。"AI 替你干活"的终极形态。' },
+  { name: '合成数据', en: 'Synthetic Data', cat: '前沿趋势',
+    desc: 'AI 自己生成数据来训练自己。解决真实数据不够用的问题。但用不好会导致模型"退化"。' },
+  { name: 'Vibe Coding', en: 'Vibe Coding', cat: '前沿趋势',
+    desc: 'Andrej Karpathy 提出的概念——用 AI 写代码时"凭感觉编程"，不再逐行理解代码。意味着编程门槛大幅降低。"有想法就能做产品"。' },
+  { name: '提示缓存', en: 'Prompt Caching', cat: '实用技术',
+    desc: '把经常重复的提示词（如系统指令）缓存起来，不重复计算 token。大幅降低成本（可省 50-90%）。' },
+  { name: '缩放定律', en: 'Scaling Laws', cat: '前沿趋势',
+    desc: 'AI 性能随模型大小、数据量、算力增长有可预测的规律。"更大 = 更强"。但 2025 年后出现争议——"算力堆不动了，算法创新更重要"。' },
+  { name: '推测解码', en: 'Speculative Decoding', cat: '实用技术',
+    desc: '用一个小模型"猜"大模型会输出什么，大模型只负责验证。加速推理 2-3 倍，输出质量不变。' },
+  { name: '嵌入', en: 'Embedding', cat: '基础概念',
+    desc: '把文字/图片/声音转成数学向量（一串数字）。相似的内容有相近的向量。搜索、推荐、RAG 的核心技术。' },
+];
+
+const PATHS = [
+  {
+    level: '🌱 入门 (5分钟/天)',
+    items: [
+      '关注公众号 量子位 / 机器之心，早上一分钟扫完 AI 头条',
+      '订阅 TLDR AI 邮件 (tldr.tech/ai)，每日 5 分钟干货',
+      '学会用 Cursor 或 GitHub Copilot 写代码——装好就能用',
+      '玩一次 ChatGPT/Claude——亲自感受"和 AI 对话"',
+      '懂 5 个核心术语：LLM、Token、Prompt、Agent、微调',
+    ],
+  },
+  {
+    level: '⚡ 进阶 (15分钟/天)',
+    items: [
+      '通勤听播客：AI局内人 / 张小珺商业访谈录（小宇宙 App）',
+      '关注 X/Twitter：@AndrewYNg、@dotey（宝玉）、@_akhaliq',
+      'B站/YouTube：跟李沐学AI、Matt Wolfe、Two Minute Papers',
+      '订阅 The Batch (DeepLearning.AI) 每周精选',
+      '逛 r/LocalLLaMA (Reddit) ——开源模型社区，质量极高',
+      '学会用 RAG——用 AI 检索自己的文档（LangChain / LlamaIndex）',
+    ],
+  },
+  {
+    level: '🚀 系统学习 (30分钟+/天)',
+    items: [
+      '加入即刻 App「AI探索站」圈子——国内最活跃 AI 社区',
+      '动手跑一个开源模型（ollama 一键运行，最简单）',
+      '学基础的 Python + ML 概念（吴恩达 DeepLearning.AI 免费课）',
+      '深度阅读：Simon Willison 博客、Sebastian Raschka newsletter',
+      '理解 MCP/ACP 协议——Agent 生态的核心基础设施',
+      '订阅 Perplexity Pro，用它做你的"每日 AI 信息助手"',
+    ],
+  },
+];
+
+const RESOURCES_ZH = [
+  { type: '📱 公众号', name: '量子位', desc: '中文 AI 新闻第一快，微信搜 QbitAI' },
+  { type: '📱 公众号', name: '机器之心', desc: '深度 AI 技术文章，微信搜 almosthuman2014' },
+  { type: '📱 公众号', name: '晚点LatePost', desc: 'AI 行业深度报道，微信搜 latepost' },
+  { type: '📧 Newsletter', name: 'TLDR AI', desc: '每日 5 分钟 AI 简报，tldr.tech/ai' },
+  { type: '📧 Newsletter', name: 'The Batch', desc: 'Andrew Ng 团队每周精选' },
+  { type: '📧 Newsletter', name: 'Import AI', desc: 'Jack Clark 深度分析' },
+  { type: '🎤 播客', name: 'AI局内人', desc: '极客公园出品，AI 一线大咖访谈' },
+  { type: '🎤 播客', name: '张小珺商业访谈录', desc: '杨植麟、王小川等深度专访' },
+  { type: '📺 B站/YouTube', name: '跟李沐学AI', desc: '中文最佳论文讲解 + AI 创业分享' },
+  { type: '📺 YouTube', name: 'Matt Wolfe', desc: '每周 AI 新闻汇总，轻松易懂' },
+  { type: '📺 YouTube', name: 'Two Minute Papers', desc: '3 分钟讲一篇 AI 论文' },
+  { type: '🌐 社区', name: 'r/LocalLLaMA', desc: 'Reddit 开源模型社区，质量极高' },
+  { type: '🌐 社区', name: '即刻·AI探索站', desc: '11 万+用户，国内最活跃 AI 圈子' },
+  { type: '📖 博客', name: 'Simon Willison', desc: 'LLM 实战经验博客' },
+  { type: '📖 博客', name: "Sebastian Raschka 'Ahead of AI'", desc: '深度学习技术深度分析' },
+  { type: '📖 博客', name: 'Stratechery', desc: 'Ben Thompson 的 AI 战略分析' },
+];
+
+// ─── REACT (vanilla) ───────────────────────────────────────────────
+
+function h(tag, attrs = {}, children = []) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'className') el.className = v;
+    else if (k === 'innerHTML') el.innerHTML = v;
+    else el.setAttribute(k, v);
+  }
+  if (typeof children === 'string') el.innerHTML = children;
+  else if (Array.isArray(children)) children.forEach(c => { if (c != null) el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+  else if (children instanceof Node) el.appendChild(children);
+  return el;
 }
 
-render();
+function renderHero() {
+  return h('section', { className: 'hero' }, [
+    h('div', { className: 'hero-content' }, [
+      h('span', { className: 'badge' }, HERO_DATA.badge),
+      h('h1', {}, HERO_DATA.title),
+      h('p', {}, HERO_DATA.subtitle),
+      h('div', { className: 'stats' },
+        HERO_DATA.stats.map(s =>
+          h('div', { className: 'stat' }, [
+            h('div', { className: 'stat-num' }, s.num),
+            h('div', { className: 'stat-label' }, s.label),
+          ])
+        )
+      ),
+    ]),
+  ]);
+}
+
+function renderTimeline() {
+  return h('div', { className: 'timeline' },
+    TIMELINE.map(t =>
+      h('div', { className: 'timeline-item' }, [
+        h('div', { className: 'timeline-year' }, t.year),
+        h('h3', { style: 'font-weight:700;margin-bottom:.3rem;font-size:1.05rem' }, t.title),
+        h('p', { style: 'color:#888;font-size:.85rem' }, t.desc),
+      ])
+    )
+  );
+}
+
+function renderToolCard(tool) {
+  const tagsMap = {
+    agent: { label: 'Agent', cls: 'tag-agent' },
+    ide: { label: 'IDE', cls: 'tag-ide' },
+    extension: { label: '扩展', cls: 'tag-extension' },
+    paid: { label: '付费', cls: 'tag-paid' },
+    free: { label: '免费', cls: 'tag-free' },
+    opensource: { label: '开源', cls: 'tag-opensource' },
+  };
+  return h('div', { className: 'tool-card', style: tool.highlight ? 'border-color:#3a2a6a;background:#1a1040' : '' }, [
+    h('div', { className: 'tool-card-header' }, [
+      h('div', { className: 'tool-icon', style: `background:${tool.color}22;color:${tool.color};border:1px solid ${tool.color}44` }, tool.icon),
+      h('div', { className: 'tool-meta' }, [
+        h('div', { className: 'tool-name' }, tool.name),
+        h('div', { className: 'tool-org' }, tool.org),
+      ]),
+    ]),
+    h('div', { className: 'tool-tags' },
+      tool.tags.map(t => {
+        const m = tagsMap[t];
+        return m ? h('span', { className: `tag ${m.cls}` }, m.label) : null;
+      })
+    ),
+    h('div', { className: 'tool-desc' }, tool.desc),
+    h('div', { className: 'tool-stats' },
+      tool.stats.map(s => h('span', { className: 'tool-stat' }, `· ${s}`))
+    ),
+  ]);
+}
+
+function renderDiagram() {
+  const cx = 450, cy = 360, r = 360;
+  return h('svg', { viewBox: '0 0 900 720' },
+    LANDSCAPE_POSITIONS.map((item, i) => {
+      const x = (item.x / 100) * 900;
+      const y = (item.y / 100) * 720;
+      const size = item.size || 14;
+      const color = item.color || '#888';
+      const opacity = item.opacity ?? 1;
+      const fill = item.bold ? 'none' : color;
+      const stroke = item.bold ? color : 'none';
+      const strokeWidth = item.bold ? 2 : 0;
+      const fontWeight = item.bold ? 800 : 500;
+      const textFill = item.bold ? color : opacity < 1 ? `${color}${Math.floor(opacity * 255).toString(16)}` : color;
+      return h('text', {
+        x, y,
+        'text-anchor': 'middle',
+        'dominant-baseline': 'middle',
+        'font-size': size,
+        'font-weight': fontWeight,
+        fill: textFill,
+        stroke,
+        'stroke-width': strokeWidth,
+        style: 'font-family:Inter,-apple-system,sans-serif;letter-spacing:.02em',
+      }, item.label);
+    })
+  );
+}
+
+function renderTermCard(term) {
+  return h('div', { className: 'term-card' }, [
+    h('div', { className: 'term-category' }, term.cat),
+    h('div', { className: 'term-name' }, term.name),
+    h('div', { className: 'term-en' }, term.en),
+    h('div', { className: 'term-desc' }, term.desc),
+  ]);
+}
+
+function renderPathCard(path) {
+  return h('div', { className: 'path-card' }, [
+    h('div', { className: 'path-level' }, path.level),
+    h('ul', { className: 'path-items' },
+      path.items.map(item => h('li', {}, item))
+    ),
+  ]);
+}
+
+function renderResourceCard(r) {
+  return h('a', { className: 'resource-card', href: '#', style: 'cursor:default' }, [
+    h('div', { className: 'resource-type' }, r.type),
+    h('div', { className: 'resource-name' }, r.name),
+    h('div', { className: 'resource-desc' }, r.desc),
+  ]);
+}
+
+// ─── BUILD ─────────────────────────────────────────────────────────
+
+function build() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  app.append(
+    renderHero(),
+
+    // Timeline
+    h('div', { className: 'container' }, [
+      h('div', { className: 'section' }, [
+        h('div', { className: 'section-title' }, [h('span', { className: 'emoji' }, '📅'), 'AI 编程工具进化史']),
+        h('div', { className: 'section-subtitle' }, '从代码补全到多智能体编排，四年走完了别人二十年的路'),
+        renderTimeline(),
+      ]),
+    ]),
+
+    // Tools
+    h('div', { className: 'container' }, [
+      h('div', { className: 'section' }, [
+        h('div', { className: 'section-title' }, [h('span', { className: 'emoji' }, '🛠️'), '主流 AI 编程工具对比']),
+        h('div', { className: 'section-subtitle' }, '截至 2026 年 5 月 · 价格、定位、适用人群一目了然'),
+        h('div', { className: 'tool-grid' }, TOOLS.map(renderToolCard)),
+      ]),
+    ]),
+
+    // Hermes Spotlight
+    h('div', { className: 'container' }, [
+      h('div', { className: 'spotlight' }, [
+        h('div', { className: 'spotlight-content' }, [
+          h('h3', {}, '🪽 Hermes Agent 在哪儿？'),
+          h('p', {}, [
+            'Hermes Agent（你正在用的这个）位于生态的 "开源 Agent" 位置。它不是 IDE（像 Cursor），不是商业产品（像 Claude Code），而是 ',
+            h('strong', { style: 'color:#a29bfe' }, '一个开源的、面向开发和进阶用户的 AI Agent 框架'),
+            '。',
+            '它的独特之处：',
+            '🧩 技能系统（记忆工作流，不用每次重教）',
+            ' · 🌐 多平台（Telegram、Discord、CLI 都能用）',
+            ' · 🔌 MCP/ACP 原生支持',
+            ' · 🎯 适合想要"自己掌控 AI 基础设施"的人。',
+            '它目前用 DeepSeek 模型驱动，你也可以换成任何你想要的模型。',
+          ].join('')),
+        ]),
+      ]),
+    ]),
+
+    // Ecosystem Diagram
+    h('div', { className: 'container' }, [
+      h('div', { className: 'section' }, [
+        h('div', { className: 'section-title' }, [h('span', { className: 'emoji' }, '🗺️'), '生态全景图']),
+        h('div', { className: 'section-subtitle' }, '从底层模型 → 协议 → 工具产品，看看每个项目站在哪里'),
+        h('div', { className: 'diagram-container' }, [
+          h('div', { className: 'diagram' }, [renderDiagram()]),
+        ]),
+      ]),
+    ]),
+
+    // Terms
+    h('div', { className: 'container' }, [
+      h('div', { className: 'section' }, [
+        h('div', { className: 'section-title' }, [h('span', { className: 'emoji' }, '📖'), 'AI 核心术语手册']),
+        h('div', { className: 'section-subtitle' }, '点击卡片查看详细解释 · 30+ 术语覆盖从入门到前沿'),
+        h('div', { className: 'term-grid' }, TERMS.map(renderTermCard)),
+      ]),
+    ]),
+
+    // Learning Path
+    h('div', { className: 'container' }, [
+      h('div', { className: 'section' }, [
+        h('div', { className: 'section-title' }, [h('span', { className: 'emoji' }, '🗺️'), '业余学习者路线图']),
+        h('div', { className: 'section-subtitle' }, '按时间投入分级，从 5 分钟到 30 分钟，总有适合你的节奏'),
+        h('div', { className: 'path-grid' }, PATHS.map(renderPathCard)),
+      ]),
+    ]),
+
+    // Resources
+    h('div', { className: 'container' }, [
+      h('div', { className: 'section' }, [
+        h('div', { className: 'section-title' }, [h('span', { className: 'emoji' }, '📡'), '推荐信息源']),
+        h('div', { className: 'section-subtitle' }, '中文为主，兼顾英文 · 精选而非堆砌 · 每个都经过社区验证'),
+        h('div', { className: 'resource-grid' }, RESOURCES_ZH.map(renderResourceCard)),
+      ]),
+    ]),
+
+    // Footer
+    h('div', { className: 'footer' }, [
+      h('p', {}, [
+        '由 ',
+        h('a', { href: 'https://github.com/eagle-cup' }, 'Hermes Agent'),
+        ' 生成 · ',
+        '数据来源 GitHub Trending · ',
+        '更新于 2026 年 5 月',
+      ]),
+    ]),
+  );
+}
+
+document.addEventListener('DOMContentLoaded', build);
 </script>
 </body>
 </html>
