@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔥 GitHub 趋势仪表盘</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0d1117; color: #c9d1d9; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 2rem;
+  }
+  .container { max-width: 1000px; width: 100%; }
+  header { margin-bottom: 2.5rem; }
+  .title-row {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: .5rem;
+  }
+  .title-row h1 {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, #58a6ff, #bc8cff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .badge {
+    background: #21262d; color: #8b949e; font-size: .75rem;
+    padding: .25rem .75rem; border-radius: 999px;
+    border: 1px solid #30363d; font-weight: 500;
+  }
+  .subtitle { color: #8b949e; font-size: .9rem; }
+  .legend {
+    display: flex; gap: 1.5rem; margin: 1rem 0 1.5rem; flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .8rem; color: #8b949e;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .repo-grid { display: flex; flex-direction: column; gap: .75rem; }
+
+  .repo-card {
+    background: #161b22; border-radius: 12px; padding: 0;
+    border: 1px solid #30363d;
+    transition: all .2s ease;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .repo-card:hover {
+    border-color: #58a6ff;
+    background: #1c2128;
+    transform: translateX(4px);
+  }
+  .repo-card:active {
+    transform: translateX(4px) scale(0.99);
+  }
+  .repo-card-inner {
+    padding: 1.25rem 1.5rem;
+    position: relative;
+  }
+  .repo-top {
+    display: flex; align-items: center; gap: .75rem;
+    margin-bottom: .4rem;
+  }
+  .rank {
+    font-size: .75rem; font-weight: 700; color: #484f58;
+    min-width: 1.5rem;
+  }
+  .lang-dot {
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  }
+  .repo-name {
+    font-weight: 600; color: #58a6ff; font-size: .95rem;
+  }
+  .repo-desc {
+    margin-left: 2.5rem; font-size: .85rem; color: #8b949e;
+    line-height: 1.4; margin-bottom: .5rem;
+  }
+  .repo-stats {
+    margin-left: 2.5rem; display: flex; gap: 1.25rem;
+    font-size: .8rem; color: #8b949e;
+  }
+  .repo-stats span { display: flex; align-items: center; gap: .3rem; }
+  .spark { font-size: .85rem; }
+
+  /* 打开按钮 — 悬停时出现在右上角 */
+  .open-btn {
+    position: absolute; top: .75rem; right: .75rem;
+    background: #238636; color: #fff;
+    border: none; border-radius: 6px;
+    padding: .3rem .7rem; font-size: .75rem; font-weight: 600;
+    opacity: 0; transition: opacity .2s;
+    text-decoration: none;
+    z-index: 2;
+  }
+  .repo-card:hover .open-btn { opacity: 1; }
+  .open-btn:hover { background: #2ea043; }
+
+  .footer {
+    margin-top: 2rem; text-align: center;
+    color: #484f58; font-size: .75rem;
+  }
+  .footer a { color: #58a6ff; text-decoration: none; }
+
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    .title-row h1 { font-size: 1.5rem; }
+    .repo-card-inner { padding: 1rem; }
+    .open-btn { opacity: 1; background: #23863688; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="title-row">
+      <h1>🔥 GitHub 趋势</h1>
+      <span class="badge">实时</span>
+    </div>
+    <div class="subtitle">今日最热门开源项目 · <span id="date"></span></div>
+    <div class="legend" id="legend-area"></div>
+  </header>
+
+  <div class="repo-grid" id="repo-grid">
+    <div style="text-align:center;padding:3rem;color:#8b949e;">⏳ 加载中...</div>
+  </div>
+
+  <div class="footer">
+    数据来源 <a href="https://github.com/trending" target="_blank">GitHub Trending</a> ·
+    点击卡片即可打开仓库
+  </div>
+</div>
+
+<script>
+document.getElementById('date').textContent = new Date().toLocaleString('zh-CN', {
+  year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'
+});
+
+const LANG_COLORS = {
+  'Python': '#3572A5', 'TypeScript': '#3178c6', 'Go': '#00ADD8',
+  'Ruby': '#701516', 'Rust': '#DEA584', 'JavaScript': '#f1e05a',
+  'Shell': '#89e051', 'C': '#555555', 'C++': '#f34b7d',
+  'Java': '#b07219', 'Kotlin': '#A97BFF', 'Swift': '#ffac45',
+  'HTML': '#e34c26', 'CSS': '#563d7c', 'Vue': '#41b883',
+  'Dart': '#00B4AB', 'PHP': '#4F5D95', 'C#': '#178600',
+};
+
+const REPOS = [
+  { name: 'Lum1104/Understand-Anything', lang: 'TypeScript', desc: 'Turn any code into an interactive knowledge graph — explore, search, and ask questions. Works with Claude Code, Codex, Cursor, Copilot, Gemini CLI.', stars: '27,248', forks: '2,322', today: '+3,999' },
+  { name: 'multica-ai/andrej-karpathy-skills', lang: '—', desc: 'A single CLAUDE.md to improve Claude Code behavior, from Andrej Karpathy\'s observations on LLM coding pitfalls.', stars: '152,724', forks: '15,652', today: '+2,551' },
+  { name: 'rohitg00/ai-engineering-from-scratch', lang: 'Python', desc: 'Learn it. Build it. Ship it for others.', stars: '16,717', forks: '2,923', today: '+1,853' },
+  { name: 'anthropics/claude-plugins-official', lang: 'Python', desc: 'Official, Anthropic-managed directory of high-quality Claude Code Plugins.', stars: '27,379', forks: '2,912', today: '+1,173' },
+  { name: 'Alishahryar1/free-claude-code', lang: 'Python', desc: 'Use claude-code for free in the terminal, VSCode extension or Discord.', stars: '29,263', forks: '4,396', today: '+553' },
+  { name: 'multica-ai/multica', lang: 'TypeScript', desc: 'Open-source managed agents platform. Turn coding agents into real teammates.', stars: '32,661', forks: '3,914', today: '+585' },
+  { name: 'colbymchenry/codegraph', lang: 'TypeScript', desc: 'Pre-indexed code knowledge graph for Claude Code, Codex, Cursor, OpenCode, and Hermes Agent.', stars: '22,911', forks: '1,264', today: '+3,003' },
+  { name: 'earendil-works/pi', lang: 'TypeScript', desc: 'AI agent toolkit: coding agent CLI, unified LLM API, TUI & web UI libraries, Slack bot, vLLM pods.', stars: '54,087', forks: '6,452', today: '+456' },
+  { name: 'anthropics/knowledge-work-plugins', lang: 'Python', desc: 'Open source repository of plugins for knowledge workers using Claude Cowork.', stars: '14,255', forks: '1,760', today: '+550' },
+  { name: 'mukul975/Anthropic-Cybersecurity-Skills', lang: 'Python', desc: '754 structured cybersecurity skills for AI agents · 5 frameworks: MITRE ATT&CK, NIST CSF 2.0, MITRE ATLAS, D3FEND & NIST AI RMF.', stars: '8,540', forks: '1,069', today: '+930' },
+];
+
+function render() {
+  const grid = document.getElementById('repo-grid');
+  const legendArea = document.getElementById('legend-area');
+
+  const langs = [...new Set(REPOS.map(r => r.lang).filter(l => l !== '—'))];
+  legendArea.innerHTML = langs.map(l => {
+    const color = LANG_COLORS[l] || '#555';
+    return `<div class="legend-item"><span class="legend-dot" style="background:${color}"></span>${l}</div>`;
+  }).join('');
+
+  grid.innerHTML = REPOS.map((r, i) => {
+    const color = LANG_COLORS[r.lang] || '#555';
+    const url = `https://github.com/${r.name}`;
+    return `<a class="repo-card" href="${url}" target="_blank" rel="noopener">
+      <div class="repo-card-inner">
+        <div class="repo-top">
+          <span class="rank">#${i+1}</span>
+          <span class="lang-dot" style="background:${color}"></span>
+          <span class="repo-name">${r.name}</span>
+        </div>
+        ${r.desc ? `<div class="repo-desc">${r.desc}</div>` : ''}
+        <div class="repo-stats">
+          <span>⭐ ${r.stars}</span>
+          <span>🍴 ${r.forks}</span>
+          <span class="spark">📈 ${r.today} today</span>
+        </div>
+        <span class="open-btn">打开 →</span>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+render();
+</script>
+</body>
+</html>
